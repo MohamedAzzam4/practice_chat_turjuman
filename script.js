@@ -1,92 +1,105 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const languageForm = document.getElementById("language-selection-form");
-    const chatForm = document.getElementById("chat-form");
+    // --- Page Views ---
+    const selectionView = document.getElementById('selection-view');
+    const chatView = document.getElementById('chat-view');
 
-    const languageView = document.getElementById("language-selection-view");
-    const chatView = document.getElementById("chat-view");
-    
-    let selectedLanguage = '';
-    let selectedLevel = '';
+    // --- Selection Form Elements ---
+    const selectionForm = document.getElementById('selection-form');
+    const languageSelect = document.getElementById('language-select');
+    const levelSelect = document.getElementById('level-select');
 
-    // Handle language selection submission
-    languageForm.addEventListener("submit", function (event) {
-        event.preventDefault();
-        
-        selectedLanguage = document.getElementById("language-select").value;
-        selectedLevel = document.getElementById("level-select").value;
+    // --- Chat Elements ---
+    const chatForm = document.getElementById('chat-form');
+    const userInputElement = document.getElementById('user-input');
+    const chatBox = document.getElementById('chat-box');
+    const chatInfo = document.getElementById('chat-info');
 
-        if (selectedLanguage && selectedLevel) {
-            // Update chat header
-            document.getElementById("chat-info").textContent = `Language: ${selectedLanguage} | Level: ${selectedLevel}`;
-            
-            // Switch views
-            languageView.style.display = "none";
-            chatView.style.display = "flex"; // Use flex as it's a flex container
-            document.getElementById("user-input").focus();
+    // --- Sidebar Elements ---
+    const sidebarNav = document.querySelector(".sidebar-nav");
+
+    // --- Handle Language and Level Selection ---
+    selectionForm.addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent page reload
+
+        const selectedLanguage = languageSelect.value;
+        const selectedLevel = levelSelect.value;
+
+        if (!selectedLanguage || !selectedLevel) {
+            alert('Please select both language and level.');
+            return;
         }
+
+        // Update the chat header
+        chatInfo.textContent = `Language: ${selectedLanguage} | Level: ${selectedLevel}`;
+
+        // Switch the views
+        selectionView.style.display = 'none';
+        chatView.style.display = 'flex'; // Use flex as per the chat container's style
+        userInputElement.focus();
     });
 
+    
+    // --- Chat History Loading (existing code) ---
+    async function loadChatHistory() {
+        try {
+            const response = await fetch("/api/history");
+            if (!response.ok) throw new Error('Failed to load history');
+            const conversations = await response.json();
+            sidebarNav.innerHTML = '';
+            conversations.forEach(chat => {
+                const chatLink = document.createElement('a');
+                chatLink.href = `#chat-${chat.id}`;
+                chatLink.className = 'nav-item';
+                chatLink.textContent = chat.title;
+                chatLink.dataset.chatId = chat.id;
+                sidebarNav.appendChild(chatLink);
+            });
+        } catch (error) {
+            console.error("Error loading chat history:", error);
+            sidebarNav.innerHTML = '<a href="#" class="nav-item">Could not load history.</a>';
+        }
+    }
+    loadChatHistory();
 
-    // Handle chat message submission
+
+    // --- Chat Message Submission (existing code) ---
     chatForm.addEventListener("submit", async function (event) {
         event.preventDefault();
-
-        const userInputElement = document.getElementById("user-input");
         const userInput = userInputElement.value.trim();
-
         if (!userInput) return;
-
         addMessage(userInput, "user-message");
-
         userInputElement.value = "";
         userInputElement.disabled = true;
-
         try {
-            // NOTE: The API endpoint '/practice' needs to be implemented on the server.
-            const response = await fetch("/practice", {
+            const response = await fetch("/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    user_input: userInput,
-                    language: selectedLanguage, // Sending language info
-                    level: selectedLevel      // Sending level info
-                }),
+                body: JSON.stringify({ user_input: userInput }),
             });
-
             if (response.ok) {
                 const data = await response.json();
                 addMessage(data.response, "ai-message");
+                loadChatHistory();
             } else {
-                addMessage("⚠️ Error: Could not get a response from the server.", "ai-message");
+                addMessage("⚠️ Error: Could not get a response.", "ai-message");
             }
         } catch (error) {
-            addMessage("⚠️ Error: Network issue. Please check your connection.", "ai-message");
+            addMessage("⚠️ Error: Network issue.", "ai-message");
         } finally {
             userInputElement.disabled = false;
             userInputElement.focus();
         }
     });
 
-    // Function to add messages to the UI
     function addMessage(message, className) {
-        const chatBox = document.getElementById("chat-box");
         const messageElement = document.createElement("div");
         messageElement.className = `message ${className}`;
-
         if (className === 'ai-message') {
-            messageElement.innerHTML = formatAIResponse(message);
+            messageElement.innerHTML = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
         } else {
             messageElement.textContent = message;
         }
-
         chatBox.appendChild(messageElement);
         chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    // Function to format AI response text
-    function formatAIResponse(text) {
-        let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        formattedText = formattedText.replace(/\n/g, '<br>');
-        return formattedText;
     }
 });
