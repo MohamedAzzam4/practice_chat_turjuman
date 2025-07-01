@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turjuman - AI Chat</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="images/logo_white.png" alt="Logo" class="logo">
+                    <span>TURJUMAN</span>
+                </div>
+                <i class="fas fa-bars menu-icon"></i>
+            </div>
+
+            <a href="#" class="new-chat-btn">
+                <i class="fas fa-plus"></i>
+                <span>New chat</span>
+            </a>
+
+            <div class="recent-chats">
+                <p class="recent-label">Recent</p>
+                <nav class="sidebar-nav">
+                    
+                </nav>
+            </div>
+
+            <div class="sidebar-footer">
+                <a href="#" class="nav-item">
+                    <i class="fas fa-cog fa-fw"></i>
+                    <span>Settings & help</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div id="chat-view">
+                <div class="chat-container">
+                    <header class="chat-header">
+                        <h1>Talk to AI</h1>
+                        <p id="chat-info">Language: English | Level: B2</p>
+                    </header>
+                    <main id="chat-box" class="chat-main">
+                        <div class="message ai-message">Hello! How can I help you practice English today?</div>
+                    </main>
+                    <footer class="chat-footer">
+                        <form id="chat-form">
+                            <input type="text" id="user-input" name="user_input" placeholder="Type your message...">
+                            <button type="submit">Send</button>
+                        </form>
+                    </footer>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
